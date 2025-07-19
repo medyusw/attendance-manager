@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>社員登録ページ</title>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    label { display: block; margin-top: 10px; }
+    #qrcode canvas { margin-top: 10px; }
+    button { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>社員登録フォーム</h2>
+
+  <form id="regForm">
+    <label>社員番号：<input type="text" id="id" required></label>
+    <label>氏名：<input type="text" id="name" required></label>
+    <label>UUID：<input type="text" id="uuid" readonly></label>
+    <button type="button" onclick="generateUUID()">UUID発行</button>
+    <div id="qrcode"></div>
+    <input type="hidden" id="auth_key" value="mySuperSecretKey123">
+    <button type="submit">登録</button>
+  </form>
+
+  <script>
+    function generateUUID() {
+      const uuid = crypto.randomUUID();
+      document.getElementById("uuid").value = uuid;
+      QRCode.toCanvas(document.getElementById("qrcode"), uuid);
+    }
+
+    document.getElementById("regForm").onsubmit = async function(e) {
+      e.preventDefault();
+      const payload = {
+        employee_id: document.getElementById("id").value,
+        name: document.getElementById("name").value,
+        uuid: document.getElementById("uuid").value,
+        auth_key: document.getElementById("auth_key").value
+      };
+      try {
+        const res = await fetch('<<Google Apps ScriptのPOST URL>>', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const text = await res.text();
+        alert("登録結果: " + text);
+      } catch (err) {
+        alert("送信エラー: " + err);
+      }
+    };
+  </script>
+</body>
+</html>
